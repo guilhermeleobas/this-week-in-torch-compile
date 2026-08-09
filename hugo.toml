@@ -1,0 +1,9 @@
+baseURL = 'https://guilhermeleobas.github.io/this-week-in-torch-compile/'
+languageCode = 'en-us'
+title = 'This Week in torch.compile'
+
+[params]
+  description = 'Weekly digest of torch.compile development'
+
+[markup.goldmark.renderer]
+  unsafe = true

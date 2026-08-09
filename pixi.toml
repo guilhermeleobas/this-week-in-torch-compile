@@ -1,0 +1,11 @@
+[workspace]
+authors = ["Guilherme Leobas <guilhermeleobas@gmail.com>"]
+channels = ["conda-forge"]
+name = "this-week"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+hugo = ">=0.164.0,<0.165"
