@@ -9,3 +9,4 @@ version = "0.1.0"
 
 [dependencies]
 hugo = ">=0.164.0,<0.165"
+python = ">=3.14.6,<3.15"
