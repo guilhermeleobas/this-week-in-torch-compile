@@ -6,6 +6,7 @@ platforms = ["osx-arm64"]
 version = "0.1.0"
 
 [tasks]
+collect = "python collect.py"
 
 [dependencies]
 hugo = ">=0.164.0,<0.165"
