@@ -19,17 +19,17 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - removed: `torch._inductor.config._cache_config_factory_keys`
 
 ## Dynamo commits
+- RNN, GRU, and LSTM modules are now traced by torch.compile by default instead of causing a graph break, which also required fixing an oneDNN/mkldnn LSTM decomposition that wrongly picked an inference-only path when parameters required gradients but the input did not. ([#185902](https://github.com/pytorch/pytorch/pull/185902), @jansel)
 - Makes the foreach operations public as `torch.foreach.*`, with cleaned-up parameter names, keyword-only arguments, and no out variants. ([#193607](https://github.com/pytorch/pytorch/pull/193607), @janeyx99)
 - Fixes a crash when compiling code that uses activation checkpointing with dynamic shapes, caused by Dynamo caching a symbolic float value against the wrong tracer when the value was first seen inside a higher-order operator body. ([#193254](https://github.com/pytorch/pytorch/pull/193254), @aperson30)
 - Stops the loud, unactionable "Backend compiler exception" warning that was printed every time Dynamo took an allowed fall back to eager, such as `Tensor.tolist()` with captured scalar outputs. ([#185155](https://github.com/pytorch/pytorch/pull/185155), @jansel)
+- Dynamo now resolves static method attributes on `torch.autograd.Function` subclasses to the real underlying functions, removing a graph break that happened when `setup_context` was inspected. ([#185316](https://github.com/pytorch/pytorch/pull/185316), @jansel)
+- Guard checking no longer applies its dictionary-version fast path to relational guards such as object-aliasing checks, which could otherwise skip half of a relation and silently accept a recompile-worthy change. ([#185911](https://github.com/pytorch/pytorch/pull/185911), @jansel)
+- Debug f-strings like `f"{a=}"` on tensors now produce a normal graph break that compiles the code before and after it, instead of making Dynamo give up on the entire function. ([#186500](https://github.com/pytorch/pytorch/pull/186500), @jansel)
 - Fixes a "dictionary changed size during iteration" crash when Dynamo traces a dictionary, such as a module's globals, that Dynamo itself mutates during garbage collection. ([#191281](https://github.com/pytorch/pytorch/pull/191281), @aperson30)
 - Lets a compiler backend declare a `_dynamo_backend_init` hook that runs once at `torch.compile()` time, so out-of-tree backends can do eager setup like loading native libraries without monkey-patching Dynamo. ([#192345](https://github.com/pytorch/pytorch/pull/192345), @yeyehaha)
 - Adds `TORCH_COMPILE_STATIC_SOURCES` to force specific sources to be treated as static shapes, an escape hatch when automatic dynamic shapes or profile-guided optimization makes something dynamic and hurts the generated kernel. ([#193626](https://github.com/pytorch/pytorch/pull/193626), @Microve)
-- Stops the deprecation warning spam from the renamed public collective aliases like `all_gather_into_tensor`, keeping the aliases and moving the guidance into the docstring. ([#193874](https://github.com/pytorch/pytorch/pull/193874), @kapilsh)
-- Lets `tensor.requires_grad = True` be traced instead of always breaking the graph, when the tensor was created inside the compiled region and has a differentiable dtype, matching what `.requires_grad_(True)` already supported. ([#191129](https://github.com/pytorch/pytorch/pull/191129), @guan404ming)
-- Fixes a CUDA memory leak where the symbolic shape environment kept holding fake tensors after compilation finished. ([#193015](https://github.com/pytorch/pytorch/pull/193015), @gtnv)
-- Dynamo can now rebuild stable Triton Tensor Memory Accelerator (TMA) descriptors after a captured graph returns, instead of silently falling back to eager execution. ([#185469](https://github.com/pytorch/pytorch/pull/185469), @jansel)
-- ...plus 20 more commits
+- ...plus 26 more commits
 
 ## Inductor commits
 - Fixes silently wrong gradients under `torch.compile` for chained modulated LayerNorms that slice one shared parameter (the DiT/AdaLN pattern used by models like Wan 2.1), a regression from mix-order reduction being enabled by default in 2.10. ([#193103](https://github.com/pytorch/pytorch/pull/193103), @haojiang01)
@@ -42,6 +42,6 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - Fixes a CPU performance bug where a vectorized outer loop smaller than the vector width made Inductor move OpenMP parallelism inside a serial loop, re-forking the thread pool on every iteration. ([#190928](https://github.com/pytorch/pytorch/pull/190928), @frost-intel)
 - Makes the eight low-level Bessel special functions differentiable in both reverse and forward mode, including careful handling of the removable singularity in J1's derivative at zero. ([#189872](https://github.com/pytorch/pytorch/pull/189872), @colalb1)
 - Fixes 32-bit integer overflow in the Triton grouped matrix multiply kernel that caused crashes or wrong results on very large tensors, and skips a hardware mode that cannot handle oversized inputs. ([#192649](https://github.com/pytorch/pytorch/pull/192649), @alexsamardzic)
-- ...plus 48 more commits
+- ...plus 52 more commits
 
-_In total, 30 Dynamo and 58 Inductor commits landed upstream this week._
+_In total, 36 Dynamo and 62 Inductor commits landed upstream this week._
