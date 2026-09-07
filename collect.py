@@ -334,6 +334,8 @@ def main():
         until = args.until or today.isoformat()
         days = args.days or 7
         since = args.since or (date.fromisoformat(until) - timedelta(days=days)).isoformat()
+        # Backfilling an older week: the issue is dated by its window, not by today.
+        pubdate = date.fromisoformat(until)
     elif args.days:
         until = today.isoformat()
         since = (today - timedelta(days=args.days)).isoformat()
@@ -366,8 +368,10 @@ def main():
     datadir.mkdir(exist_ok=True)
     (datadir / f"{until}.json").write_text(json.dumps(commits, indent=2))
     stem = "this-week-in-torch-compile"
-    others = [p for p in outdir.glob(f"*-{stem}.md") if not p.name.startswith(pubdate.isoformat())]
-    issue = len(others) + 1
+    # Issue number is the week's chronological position, so regenerating an
+    # older week renumbers it correctly instead of appending to the end.
+    earlier = [p for p in outdir.glob(f"*-{stem}.md") if p.name[:10] < pubdate.isoformat()]
+    issue = len(earlier) + 1
     md = render(live, forum, announcements, cfg_changes, since, until, issue, pubdate)
     post = outdir / f"{pubdate.isoformat()}-{stem}.md"
     post.write_text(md)
