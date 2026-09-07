@@ -19,6 +19,7 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 
 ## Dynamo commits
 - Graphs containing autocast enter/exit are now cacheable by AOTAutograd instead of permanently bypassing the cache, which had forced a full recompile every process start for models entering autocast inside forward. ([#192555](https://github.com/pytorch/pytorch/pull/192555), @anijain2305)
+- Lets `tensor.requires_grad = True` be traced instead of always breaking the graph, when the tensor was created inside the compiled region and has a differentiable dtype, matching what `.requires_grad_(True)` already supported. ([#191129](https://github.com/pytorch/pytorch/pull/191129), @guan404ming)
 - Fixes a CUDA memory leak where the symbolic shape environment kept holding fake tensors after compilation finished. ([#193015](https://github.com/pytorch/pytorch/pull/193015), @gtnv)
 - Dynamo can now rebuild stable Triton Tensor Memory Accelerator (TMA) descriptors after a captured graph returns, instead of silently falling back to eager execution. ([#185469](https://github.com/pytorch/pytorch/pull/185469), @jansel)
 - Dynamo skips calling the backend compiler entirely for graphs that compute nothing after dead-code elimination, saving a full AOTAutograd pass per such frame. ([#193157](https://github.com/pytorch/pytorch/pull/193157), @anijain2305)
@@ -27,8 +28,7 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - Reverts boxing of resume-frame values because it renamed the physical source paths Dynamo reports, breaking dynamic-shape whitelists recorded by profile-guided optimization for any model that deletes a variable after a graph break. ([#192868](https://github.com/pytorch/pytorch/pull/192868), @ezyang)
 - Dynamo lowers symbolic boolean negation to `torch.sym_not` so `torch._check(not expr)` installs a real assertion instead of being constant-folded away. ([#186043](https://github.com/pytorch/pytorch/pull/186043), @jansel)
 - Dynamo refreshes cached tensor size, stride, and contiguity after any in-place mutation, fixing stale metadata reads after calls like `as_strided_`. ([#187890](https://github.com/pytorch/pytorch/pull/187890), @jansel)
-- Adds polyfill implementations so Dynamo can trace more functions from Python's `operator` module without breaking the graph. ([#192942](https://github.com/pytorch/pytorch/pull/192942), @hameerabbasi)
-- ...plus 29 more commits
+- ...plus 30 more commits
 
 ## Inductor commits
 - Apple Metal (MPS) gains native int8 matrix multiplication, so quantized and ahead-of-time-compiled workloads no longer fail on Mac GPUs. ([#193153](https://github.com/pytorch/pytorch/pull/193153), @froggy-hyun)
@@ -43,4 +43,4 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - The mm_plus_mm and bmm Triton templates now count the reduction loop upward, working around an Intel GPU compiler bug that silently produced wrong results. ([#189516](https://github.com/pytorch/pytorch/pull/189516), @xuhancn)
 - ...plus 48 more commits
 
-_In total, 39 Dynamo and 58 Inductor commits landed upstream this week._
+_In total, 40 Dynamo and 58 Inductor commits landed upstream this week._
