@@ -45,3 +45,15 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - ...plus 48 more commits ([full log]({{< relref "/full-log/2026-09-13#inductor-commits" >}}))
 
 _In total, 56 Dynamo and 58 Inductor commits landed upstream this week._
+
+_Notable commits per week (score 3+ of 5), last 6 weeks:_
+
+```text
+        Dynamo                      Inductor
+Aug 09  ███████▍               14   █████████▍             18
+Aug 16  ██████████▌            20   ██████████████████████ 42
+Aug 23  █████████▍             18   ████████████████████▍  39
+Aug 30  ███████████            21   ██████████████▋        28
+Sep 06  █████▊                 11   ████████████▋          24
+Sep 13  ██████▎                12   ████████▍              16
+```
