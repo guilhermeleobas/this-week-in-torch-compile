@@ -368,17 +368,13 @@ def trend(pubdate, weeks=TREND_WEEKS, title=None):
     scale = max(n for _, counts in rows for n in counts.values()) or 1
     names = [name for name, _ in SUBSYSTEMS]
     head = "".join(f"{name:<{BAR_WIDTH + 6}}" for name in names)
-    # Raw <pre> rather than a code fence: the bars are wrapped in a span so
-    # they can pick up the link color, which a fenced block cannot express.
-    out = ['<pre class="chart">', f"{'':<8}{head.rstrip()}"]
+    out = ["```", f"{'':<8}{head.rstrip()}"]
     for week, counts in rows:
-        cells = ""
-        for name in names:
-            glyphs = bar(counts[name], scale)
-            pad = " " * (BAR_WIDTH - len(glyphs))
-            cells += f'<span class="bar">{glyphs}</span>{pad} {counts[name]:<5}'
+        cells = "".join(
+            f"{bar(counts[name], scale):<{BAR_WIDTH}} {counts[name]:<5}" for name in names
+        )
         out.append(f"{week:%b %d}  {cells.rstrip()}")
-    out += ["</pre>", ""]
+    out += ["```", ""]
     caption = title or f"Notable commits per week (score 3+ of 5), last {len(rows)} weeks"
     return [
         f"_{caption}:_",
