@@ -309,11 +309,39 @@ def render(commits, forum, announcements, cfg_changes, since, until, issue, pubd
         lines.append(f"## {name} commits")
         lines.extend(item_line(c) for c in shown)
         if rest:
-            lines.append(f"- ...plus {len(rest)} more commits")
+            anchor = name.lower().replace(" ", "-") + "-commits"
+            ref = f'{{{{< relref "/full-log/{pubdate}#{anchor}" >}}}}'
+            lines.append(f"- ...plus {len(rest)} more commits ([full log]({ref}))")
         lines.append("")
     counts = {name: sum(c["subsystem"] == name for c in commits) for name, _ in SUBSYSTEMS}
     totals = " and ".join(f"{n} {name}" for name, n in counts.items())
     lines += [f"_In total, {totals} commits landed upstream this week._", ""]
+    return "\n".join(lines)
+
+
+def render_fulllog(commits, since, until, issue, pubdate):
+    """Companion page: every commit in the window, summarized, grouped as in the issue."""
+    lines = [
+        "---",
+        f'title: "Full log - issue #{issue} ({pubdate:%b %-d})"',
+        f"date: {pubdate}",
+        "---",
+        "",
+        f"Every torch.compile commit that landed between {since} and {until}, "
+        f"including the ones the [issue]({{{{< relref \"/posts/{pubdate}-this-week-in-torch-compile\" >}}}}) "
+        "only counted.",
+        "",
+    ]
+    groups = defaultdict(list)
+    for c in commits:
+        groups[c["subsystem"]].append(c)
+    for name, _ in SUBSYSTEMS:
+        if not groups.get(name):
+            continue
+        section = sorted(groups[name], key=lambda c: c.get("score") or relevance(c), reverse=True)
+        lines.append(f"## {name} commits")
+        lines.extend(item_line(c) for c in section)
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -375,7 +403,12 @@ def main():
     md = render(live, forum, announcements, cfg_changes, since, until, issue, pubdate)
     post = outdir / f"{pubdate.isoformat()}-{stem}.md"
     post.write_text(md)
-    counts = ", ".join(f"{s}: {sum(c['subsystem'] == s for c in commits)}" for s, _ in SUBSYSTEMS)
+    logdir = Path("content/full-log")
+    logdir.mkdir(parents=True, exist_ok=True)
+    (logdir / f"{pubdate.isoformat()}.md").write_text(
+        render_fulllog(live, since, until, issue, pubdate)
+    )
+    counts =", ".join(f"{s}: {sum(c['subsystem'] == s for c in commits)}" for s, _ in SUBSYSTEMS)
     print(f"{len(commits)} items ({counts}) -> {post}")
 
 
