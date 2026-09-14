@@ -48,7 +48,7 @@ _In total, 56 Dynamo and 58 Inductor commits landed upstream this week._
 
 _Notable commits per week (score 3+ of 5), last 6 weeks:_
 
-```text
+```
         Dynamo                      Inductor
 Aug 09  ███████▍               14   █████████▍             18
 Aug 16  ██████████▌            20   ██████████████████████ 42

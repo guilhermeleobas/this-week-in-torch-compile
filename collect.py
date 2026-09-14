@@ -368,7 +368,7 @@ def trend(pubdate, weeks=TREND_WEEKS, title=None):
     scale = max(n for _, counts in rows for n in counts.values()) or 1
     names = [name for name, _ in SUBSYSTEMS]
     head = "".join(f"{name:<{BAR_WIDTH + 6}}" for name in names)
-    out = ["```text", f"{'':<8}{head.rstrip()}"]
+    out = ["```", f"{'':<8}{head.rstrip()}"]
     for week, counts in rows:
         cells = "".join(
             f"{bar(counts[name], scale):<{BAR_WIDTH}} {counts[name]:<5}" for name in names

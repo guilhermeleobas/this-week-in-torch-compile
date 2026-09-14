@@ -13,7 +13,7 @@ Inspired by [LLVM Weekly](https://llvmweekly.org/).
 <!-- trend:start -->
 _Notable commits per week (score 3+ of 5):_
 
-```text
+```
         Dynamo                      Inductor
 Aug 09  ███████▍               14   █████████▍             18
 Aug 16  ██████████▌            20   ██████████████████████ 42
