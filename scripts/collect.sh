@@ -12,7 +12,7 @@ if git diff --cached --quiet -- content/posts content/full-log; then
 fi
 
 # Name the commit after the issue the run just wrote or refreshed.
-post=$(git diff --cached --name-only -- content/posts | tail -1)
+post=$(git diff --cached --name-only --diff-filter=d -- content/posts | tail -1)
 title=$(sed -n 's/^title: "\(.*\)"$/\1/p' "$post" | head -1)
 git commit -q -m "${title:-Add digest issue}"
 git --no-pager log -1 --oneline
