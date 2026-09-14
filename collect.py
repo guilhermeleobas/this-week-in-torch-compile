@@ -316,7 +316,70 @@ def render(commits, forum, announcements, cfg_changes, since, until, issue, pubd
     counts = {name: sum(c["subsystem"] == name for c in commits) for name, _ in SUBSYSTEMS}
     totals = " and ".join(f"{n} {name}" for name, n in counts.items())
     lines += [f"_In total, {totals} commits landed upstream this week._", ""]
+    lines += trend(pubdate)
     return "\n".join(lines)
+
+
+TREND_WEEKS = 8
+BAR_WIDTH = 22
+EIGHTHS = " ▏▎▍▌▋▊▉█"
+
+
+def bar(value, scale, width=BAR_WIDTH):
+    """Block bar with eighth-of-a-character precision."""
+    if scale <= 0:
+        return ""
+    eighths = round(value / scale * width * 8)
+    return "█" * (eighths // 8) + EIGHTHS[eighths % 8].strip()
+
+
+def trend(pubdate, weeks=TREND_WEEKS):
+    """Notable (score >=3) commits per subsystem over the trailing `weeks` dumps.
+
+    Reads the per-week raw dumps, so it costs nothing beyond a few file reads.
+    Weeks predating the LLM rating step have no scores at all; they are skipped
+    rather than charted as zero.
+    """
+    rows = []
+    for path in sorted(Path("raw").glob("2026-*.json")):
+        try:
+            week = date.fromisoformat(path.stem)
+        except ValueError:
+            continue
+        if week > pubdate:
+            continue
+        try:
+            commits = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not any(c.get("score") is not None for c in commits):
+            continue
+        counts = {
+            name: sum(
+                c["subsystem"] == name and not c.get("reverted") and (c.get("score") or 0) >= 3
+                for c in commits
+            )
+            for name, _ in SUBSYSTEMS
+        }
+        rows.append((week, counts))
+    rows = rows[-weeks:]
+    if len(rows) < 2:
+        return []
+    scale = max(n for _, counts in rows for n in counts.values()) or 1
+    names = [name for name, _ in SUBSYSTEMS]
+    head = "".join(f"{name:<{BAR_WIDTH + 6}}" for name in names)
+    out = ["```text", f"{'':<8}{head.rstrip()}"]
+    for week, counts in rows:
+        cells = "".join(
+            f"{bar(counts[name], scale):<{BAR_WIDTH}} {counts[name]:<5}" for name in names
+        )
+        out.append(f"{week:%b %d}  {cells.rstrip()}")
+    out += ["```", ""]
+    return [
+        f"_Notable commits per week (score 3+ of 5), last {len(rows)} weeks:_",
+        "",
+        *out,
+    ]
 
 
 def render_fulllog(commits, since, until, issue, pubdate):
