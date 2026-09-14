@@ -333,7 +333,7 @@ def bar(value, scale, width=BAR_WIDTH):
     return "█" * (eighths // 8) + EIGHTHS[eighths % 8].strip()
 
 
-def trend(pubdate, weeks=TREND_WEEKS):
+def trend(pubdate, weeks=TREND_WEEKS, title=None):
     """Notable (score >=3) commits per subsystem over the trailing `weeks` dumps.
 
     Reads the per-week raw dumps, so it costs nothing beyond a few file reads.
@@ -375,11 +375,36 @@ def trend(pubdate, weeks=TREND_WEEKS):
         )
         out.append(f"{week:%b %d}  {cells.rstrip()}")
     out += ["```", ""]
+    caption = title or f"Notable commits per week (score 3+ of 5), last {len(rows)} weeks"
     return [
-        f"_Notable commits per week (score 3+ of 5), last {len(rows)} weeks:_",
+        f"_{caption}:_",
         "",
         *out,
     ]
+
+
+TREND_MARKERS = ("<!-- trend:start -->", "<!-- trend:end -->")
+
+
+def update_homepage(pubdate, path=Path("content/_index.md")):
+    """Refresh the all-time trend block on the homepage, keeping the prose around it.
+
+    The block is delimited by HTML comments so the hand-written intro is never
+    clobbered; on first run the block is appended.
+    """
+    rows = trend(pubdate, weeks=1000, title="Notable commits per week (score 3+ of 5)")
+    if not rows or not path.exists():
+        return
+    start, end = TREND_MARKERS
+    block = "\n".join([start, *rows, end])
+    text = path.read_text()
+    if start in text and end in text:
+        head, _, rest = text.partition(start)
+        _, _, tail = rest.partition(end)
+        text = head + block + tail
+    else:
+        text = text.rstrip() + "\n\n" + block + "\n"
+    path.write_text(text)
 
 
 def render_fulllog(commits, since, until, issue, pubdate):
@@ -471,7 +496,8 @@ def main():
     (logdir / f"{pubdate.isoformat()}.md").write_text(
         render_fulllog(live, since, until, issue, pubdate)
     )
-    counts =", ".join(f"{s}: {sum(c['subsystem'] == s for c in commits)}" for s, _ in SUBSYSTEMS)
+    update_homepage(pubdate)
+    counts = ", ".join(f"{s}: {sum(c['subsystem'] == s for c in commits)}" for s, _ in SUBSYSTEMS)
     print(f"{len(commits)} items ({counts}) -> {post}")
 
 
