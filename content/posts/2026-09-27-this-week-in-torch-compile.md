@@ -7,8 +7,6 @@ _Covering 2026-09-20 to 2026-09-27._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [PyTorch Release 2.14.1](https://dev-discuss.pytorch.org/t/pytorch-release-2-14-1/3444)
 
 ## On the forums

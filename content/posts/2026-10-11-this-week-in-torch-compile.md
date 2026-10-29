@@ -7,8 +7,6 @@ _Covering 2026-10-04 to 2026-10-11._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [PyTorch 2.15 RC1 produced for pytorch, torchvision & torchaudio](https://dev-discuss.pytorch.org/t/pytorch-2-15-rc1-produced-for-pytorch-torchvision-torchaudio/3464)
 - [PyTorch Release 2.15 Branch Cut is Complete](https://dev-discuss.pytorch.org/t/pytorch-release-2-15-branch-cut-is-complete/3461)
 

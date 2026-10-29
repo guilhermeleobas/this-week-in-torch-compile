@@ -5,10 +5,6 @@ date: 2026-10-18
 
 _Covering 2026-10-11 to 2026-10-18._
 
-## News and Announcements
-
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 ## On the forums
 
 Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5).

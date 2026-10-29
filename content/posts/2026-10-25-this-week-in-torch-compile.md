@@ -7,8 +7,6 @@ _Covering 2026-10-18 to 2026-10-25._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [PyTorch 2.15 Final RC Available](https://dev-discuss.pytorch.org/t/pytorch-2-15-final-rc-available/3466)
 
 ## On the forums
