@@ -19,32 +19,32 @@ Quiet week on [the compiler forum](https://dev-discuss.pytorch.org/c/compiler/5)
 - new: `torch._inductor.config.max_autotune_gemm_min_sms`
 
 ## Dynamo commits
-- Out-of-tree backends such as Ascend NPU (torch_npu) now have their current_stream registered with Dynamo, fixing a crash in wait_stream calls inside compiled functions. ([#192970](https://github.com/pytorch/pytorch/pull/192970), @AAYESLY)
-- Dynamo now keeps true division, floor division and modulo by constant divisors lazy on lazy integer constants, avoiding value guards and the recompiles they cause. ([#198992](https://github.com/pytorch/pytorch/pull/198992), @guan404ming)
-- Dynamo now keeps str() and bitwise invert lazy on lazy integer constants, avoiding value guards and recompiles, and handles symbolic values without sending the whole frame to eager. ([#198988](https://github.com/pytorch/pytorch/pull/198988), @guan404ming)
-- Dynamo's saved_tensors_hooks guard now invalidates when a guarded hook is freed, preventing a new hook reusing the old address from running a graph compiled for the old hook. ([#202143](https://github.com/pytorch/pytorch/pull/202143), @chinmaydk99)
-- Dynamo can now trace repr() and str() of mappingproxy objects (such as class dictionaries) instead of graph breaking. ([#196902](https://github.com/pytorch/pytorch/pull/196902), @weicheng-hsu)
-- Dynamo no longer builds a length guard for iterables passed to list(), so objects with __iter__ but no __len__ now work as in eager. ([#201070](https://github.com/pytorch/pytorch/pull/201070), @riccardofelluga)
-- Dynamo now supports bytearray.insert() and pop() without graph breaks. ([#199810](https://github.com/pytorch/pytorch/pull/199810), @jayzuccarelli)
-- Dynamo now supports bytearray.split and rsplit with constant arguments without graph breaks. ([#200612](https://github.com/pytorch/pytorch/pull/200612), @Sanskaaar1)
-- Enables more tests on s390x by adding a cache-size query for that platform and making the test shim link libdl explicitly. ([#198886](https://github.com/pytorch/pytorch/pull/198886), @AlekseiNikiforovIBM)
-- Fixes a flaky Dynamo random-draw test by compiling with a warm-up call before reseeding the RNG. ([#202224](https://github.com/pytorch/pytorch/pull/202224), @ezyang)
-- ...plus 1 more commits ([full log]({{< relref "/full-log/2026-11-01#dynamo-commits" >}}))
+- Fixes a Python 3.14 crash and missed cache hits where a garbage-collected guard manager was freed while Dynamo was still evaluating a cache entry. ([#199820](https://github.com/pytorch/pytorch/pull/199820), @itamaro)
+- Fixes unnecessary recompilation in Dynamo when slices have dynamic bounds, so such functions now compile once. ([#202378](https://github.com/pytorch/pytorch/pull/202378), @khushi-411)
+- Fixes compiled torch.cuda.synchronize() on an index-less device to sync the caller's current device instead of always device 0. ([#197384](https://github.com/pytorch/pytorch/pull/197384), @aorenste)
+- Fixes Dynamo silently taking the wrong branch for `if x:` when truthiness isn't a constant, which gave wrong results for values like range or dict.keys() inputs. ([#202375](https://github.com/pytorch/pytorch/pull/202375), @hameerabbasi)
+- Torch.compiler.precompile.capture() now accepts torch.compile's mode= and options= so models can be precompiled with settings like max-autotune. ([#201940](https://github.com/pytorch/pytorch/pull/201940), @bobrenjc93)
+- Deletes the legacy, never-launched TorchScript graph-mode quantization workflows (about 11k lines), a BC-breaking removal from the public API. ([#201696](https://github.com/pytorch/pytorch/pull/201696), @vkuzo)
+- Fixes Dynamo's itertools.product with repeat=0 so it no longer consumes the input iterators, matching CPython. ([#201609](https://github.com/pytorch/pytorch/pull/201609), @mottopanikeiku)
+- Precompiled Dynamo artifacts now import the modules that register custom ops, so replay of functions calling only torch.ops.<ns>.<op> no longer fails. ([#202258](https://github.com/pytorch/pytorch/pull/202258), @bobrenjc93)
+- Adds extra Dynamo guards on dictionary length so compiled code is correct when dict sizes change. ([#202374](https://github.com/pytorch/pytorch/pull/202374), @hameerabbasi)
+- Fixes a Dynamo crash on `not obj` when a user-defined object's truthiness is symbolic after a recompile. ([#202376](https://github.com/pytorch/pytorch/pull/202376), @hameerabbasi)
+- ...plus 43 more commits ([full log]({{< relref "/full-log/2026-11-01#dynamo-commits" >}}))
 
 ## Inductor commits
+- Adds an Inductor option, triton.enable_fp_fusion, to turn off fused multiply-add contraction so kernels give identical bits regardless of which autotuned config is picked. ([#202218](https://github.com/pytorch/pytorch/pull/202218), @dmdok)
+- Fixes dropout on CUDA under-reserving random number generator offsets in vectorized kernels, which made the next random call reuse values. ([#202606](https://github.com/pytorch/pytorch/pull/202606), @jbschlosser)
+- Fixes Inductor wrongly removing a clone whose storage offset differs from its source, which gave wrong results for as_strided and user Triton kernels. ([#202409](https://github.com/pytorch/pytorch/pull/202409), @zztbit)
 - A new Inductor config makes the minimum SM (streaming multiprocessor) count for is_big_gpu adjustable, so Jetson-class GPUs can use max-autotune GEMM templates instead of silently falling back to ATen. ([#201583](https://github.com/pytorch/pytorch/pull/201583), @andriidrok1)
 - Inductor now rounds the conv bias add to the fp16/bf16 conv dtype before fusion, so compiled numerics match eager regardless of whether the conv output is saved for backward. ([#201713](https://github.com/pytorch/pytorch/pull/201713), @KarhouTam)
 - Reverts the change that prefetched Inductor cache keys in a background thread at torch.compile() time, because it caused vLLM CI hangs on builds including it (nightlies since 20261001, release/2.15). ([#202167](https://github.com/pytorch/pytorch/pull/202167), @atalman)
 - Inductor's CUDA Triton conv templates now use TF32 when eager cuDNN convolutions do, so max-autotune compares like-for-like precision against cuDNN. ([#201774](https://github.com/pytorch/pytorch/pull/201774), @shoumikhin)
 - Fixes a NameError in generated code when a user Triton kernel receives a NamedTuple constexpr argument whose type was missing from the generated namespace. ([#192531](https://github.com/pytorch/pytorch/pull/192531), @sankalpsthakur)
 - The compiled binary_cross_entropy now raises on out-of-range inputs like eager does, instead of silently computing. ([#200512](https://github.com/pytorch/pytorch/pull/200512), @KarhouTam)
-- Inductor now includes a Triton config's extra_options in its identity, so configs that differ only in those options are no longer conflated; configs with non-empty options get new autotune hashes and old tuning records are invalidated. ([#201695](https://github.com/pytorch/pytorch/pull/201695), @luochao-dev)
-- Max-autotune for reductions now always keeps the default persistent-reduction config in its search, so the search space is a superset of the default one. ([#194887](https://github.com/pytorch/pytorch/pull/194887), @shino16)
-- On MPS, each Inductor Metal kernel now has its own headers set, so kernels without asserts no longer get an unused error_buf parameter after another kernel added the error header. ([#202232](https://github.com/pytorch/pytorch/pull/202232), @Isalia20)
-- Fixes Flex Flash score_mod vector widths under max_autotune on Hopper-class GPUs, where unsupported vec_size 4 raised an error during lowering. ([#202123](https://github.com/pytorch/pytorch/pull/202123), @Aidyn-A)
-- ...plus 12 more commits ([full log]({{< relref "/full-log/2026-11-01#inductor-commits" >}}))
+- Adds a wave32 WMMA int4 matrix-multiply path on ROCm so int4mm works on RDNA (gfx11/gfx12) and gfx1250 GPUs. ([#201248](https://github.com/pytorch/pytorch/pull/201248), @jeffdaily)
+- ...plus 61 more commits ([full log]({{< relref "/full-log/2026-11-01#inductor-commits" >}}))
 
-_In total, 11 Dynamo and 22 Inductor commits landed upstream this week._
+_In total, 53 Dynamo and 71 Inductor commits landed upstream this week._
 
 _Notable commits per week (score 3+ of 5), last 8 weeks:_
 
@@ -57,5 +57,5 @@ Oct 04  ██████████▌            29   ███████�
 Oct 11  █████▊                 16   ████████████████████▉  58
 Oct 18  █████████▊             27   ██████████████████▍    51
 Oct 25  ██▉                    8    ███████████▏           31
-Nov 01  ██▏                    6    ████▊                  13
+Nov 01  █████████▊             27   █████████████▊         38
 ```
