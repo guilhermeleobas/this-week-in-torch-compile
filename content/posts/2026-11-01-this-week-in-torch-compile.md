@@ -7,8 +7,6 @@ _Covering 2026-10-25 to 2026-11-01._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [PyTorch 2.15.0 General Availability](https://dev-discuss.pytorch.org/t/pytorch-2-15-0-general-availability/3470)
 
 ## On the forums
