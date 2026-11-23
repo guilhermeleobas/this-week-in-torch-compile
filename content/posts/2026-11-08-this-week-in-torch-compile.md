@@ -7,8 +7,6 @@ _Covering 2026-11-01 to 2026-11-08._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [Release 2.16.0 | Key Dates](https://dev-discuss.pytorch.org/t/release-2-16-0-key-dates/3472)
 
 ## On the forums

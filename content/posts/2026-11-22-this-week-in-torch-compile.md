@@ -7,8 +7,6 @@ _Covering 2026-11-15 to 2026-11-22._
 
 ## News and Announcements
 
-<!-- editorial: releases, RFCs, blog posts, talks, announcements. Delete section if empty. -->
-
 - [No PyTorch 2.15.1 release](https://dev-discuss.pytorch.org/t/no-pytorch-2-15-1-release/3536)
 
 ## On the forums
